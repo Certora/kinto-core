@@ -8,3 +8,7 @@ bin
 
 # Dotenv file
 .env
+
+# Certora
+.certora_internal/*
+certora/munged/*

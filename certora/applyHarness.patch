@@ -1,0 +1,40 @@
+--- ../src/KintoID.sol	2024-01-11 14:11:45.673358961 +0200
++++ 	2024-01-11 18:54:06.632582120 +0200
+@@ -36,7 +36,7 @@
+ 
+     /* ============ State Variables ============ */
+ 
+-    uint256 private _nextTokenId;
++    uint256 internal _nextTokenId;
+ 
+    // We'll monitor the whole list every single day and update it
+     uint256 public override lastMonitoredAt;
+@@ -295,6 +295,16 @@
+     /* ============ View Functions ============ */
+ 
+     /**
++     * @dev Returns whether the account is sanctioned in a country.
++     * @param _account account to be checked.
++     * @param _countryId country id to be checked.
++     * @return true if the account is sanctioned.
++     */
++    function isSanctioned(address _account, uint16 _countryId) external view returns (bool) {
++        return _kycmetas[_account].sanctions.get(_countryId);
++    }
++
++    /**
+      * @dev Returns whether the account holder is KYCd
+      * @param _account account to be checked.
+      * @return true if the account has KYC token.
+--- ../src/wallet/KintoWalletFactory.sol	2024-01-11 18:54:35.503409326 +0200
++++ 	2024-01-11 18:55:54.380889497 +0200
+@@ -227,7 +227,8 @@
+      */
+     function getAddress(address owner, address recoverer, uint256 salt) public view override returns (address) {
+         return Create2.computeAddress(bytes32(salt), keccak256(abi.encodePacked(
+-                type(SafeBeaconProxy).creationCode,
++                /// Certora: temporary removal to solve reachability issue:
++                //type(SafeBeaconProxy).creationCode,
+                 abi.encode(
+                     address(beacon),
+                     abi.encodeCall(KintoWallet.initialize, (owner, recoverer))
